@@ -1,85 +1,118 @@
-# game/main.py
-import pygame, random, sqlite3
+import pygame
+import random
 from player import Player
+from meteor import Meteor
 from bullet import Bullet
-from obstacle import Meteor
-from ui import UI
 
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+
+# --- Window setup ---
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Survival Shooter")
-
-# Load assets
-bg = pygame.image.load("assets/images/background.png").convert()
-player_img = pygame.image.load("assets/images/player.png").convert_alpha()
-bullet_img = pygame.image.load("assets/images/bullet.png").convert_alpha()
-meteor_img = pygame.image.load("assets/images/meteor.png").convert_alpha()
-
-# Groups
-player = Player(player_img, 400, 500)
-bullets = pygame.sprite.Group()
-meteors = pygame.sprite.Group()
-all_sprites = pygame.sprite.Group(player)
-
-font = pygame.font.Font(None, 36)
-ui = UI(font)
-
 clock = pygame.time.Clock()
-running = True
-spawn_timer = 0
+FPS = 60
 
-# --- Database setup ---
-conn = sqlite3.connect("data/game.db")
-c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS scores (id INTEGER PRIMARY KEY, score INTEGER)")
-conn.commit()
+# --- Assets ---
+bg_img = pygame.image.load("assets/images/background.png").convert()
+bg_img = pygame.transform.scale(bg_img, (WIDTH, HEIGHT))
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+player_img = pygame.image.load("assets/images/player.png").convert_alpha()
+meteor_img = pygame.image.load("assets/images/meteor.png").convert_alpha()
+bullet_img = pygame.image.load("assets/images/bullet.png").convert_alpha()
 
-        # Shoot bullet
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            bullet = Bullet(player.rect.centerx, player.rect.top, bullet_img)
-            bullets.add(bullet)
-            all_sprites.add(bullet)
+# --- Colors ---
+WHITE = (255, 255, 255)
+RED = (255, 60, 60)
 
-    keys = pygame.key.get_pressed()
-    player.update(keys)
+def draw_text(surface, text, size, x, y, color=WHITE):
+    font = pygame.font.Font(None, size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(center=(x, y))
+    surface.blit(text_surface, text_rect)
 
-    # Spawn meteors randomly
-    spawn_timer += 1
-    if spawn_timer > 30:
+# --- Game Loop ---
+def game_loop():
+    all_sprites = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
+    meteors = pygame.sprite.Group()
+
+    player = Player(player_img, WIDTH // 2, HEIGHT - 100)
+    all_sprites.add(player)
+
+    for _ in range(6):
         meteor = Meteor(meteor_img)
-        meteors.add(meteor)
         all_sprites.add(meteor)
-        spawn_timer = 0
+        meteors.add(meteor)
 
-    # Update bullets & meteors
-    bullets.update()
-    meteors.update()
+    score = 0
+    lives = 3
+    running = True
+    game_over = False
 
-    # Collisions
-    for bullet in bullets:
-        hit_meteors = pygame.sprite.spritecollide(bullet, meteors, True)
-        if hit_meteors:
-            bullet.kill()
-            ui.score += 10
+    while running:
+        clock.tick(FPS)
+        keys = pygame.key.get_pressed()
 
-    if pygame.sprite.spritecollide(player, meteors, True):
-        ui.lives -= 1
-        if ui.lives <= 0:
-            c.execute("INSERT INTO scores (score) VALUES (?)", (ui.score,))
-            conn.commit()
-            running = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    # Draw everything
-    screen.blit(bg, (0, 0))
-    all_sprites.draw(screen)
-    ui.draw(screen)
-    pygame.display.flip()
-    clock.tick(60)
+            if not game_over and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bullet = Bullet(bullet_img, player.rect.centerx, player.rect.top)
+                    all_sprites.add(bullet)
+                    bullets.add(bullet)
 
-conn.close()
+        if not game_over:
+            # --- Update ---
+            player.update(keys)
+            meteors.update()
+            bullets.update()
+
+            # --- Collisions ---
+            # Bullets hit meteors
+            hits = pygame.sprite.groupcollide(meteors, bullets, True, True)
+            for _ in hits:
+                score += 10
+                m = Meteor(meteor_img)
+                all_sprites.add(m)
+                meteors.add(m)
+
+            # Meteors hit player
+            hits = pygame.sprite.spritecollide(player, meteors, True)
+            for _ in hits:
+                lives -= 1
+                m = Meteor(meteor_img)
+                all_sprites.add(m)
+                meteors.add(m)
+                if lives <= 0:
+                    game_over = True
+
+            # --- Draw everything ---
+            screen.blit(bg_img, (0, 0))
+            all_sprites.draw(screen)
+            draw_text(screen, f"Score: {score}", 30, 70, 20)
+            draw_text(screen, f"Lives: {lives}", 30, WIDTH - 80, 20)
+
+        else:
+            screen.blit(bg_img, (0, 0))
+            draw_text(screen, "GAME OVER", 64, WIDTH // 2, HEIGHT // 2 - 50, RED)
+            draw_text(screen, "Press R to Restart or Q to Quit", 36, WIDTH // 2, HEIGHT // 2 + 20)
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_r]:
+                return True
+            if keys[pygame.K_q]:
+                running = False
+
+        pygame.display.flip()
+
+    return False
+
+# --- Restart loop ---
+restart = True
+while restart:
+    restart = game_loop()
+
 pygame.quit()

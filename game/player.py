@@ -3,9 +3,9 @@ import pygame
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         super().__init__()
-        self.image = pygame.transform.scale(image, (70, 70))  # Larger ship
+        self.image = pygame.transform.scale(image, (60, 60))
         self.rect = self.image.get_rect(center=(x, y))
-        self.speed = 6
+        self.speed = 5
 
     def update(self, keys):
         if keys[pygame.K_LEFT] and self.rect.left > 0:
