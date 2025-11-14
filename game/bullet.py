@@ -1,9 +1,9 @@
 import pygame
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, image, x, y):
+    def __init__(self, img, x, y):
         super().__init__()
-        self.image = pygame.transform.scale(image, (10, 25))
+        self.image = pygame.transform.scale(img, (10, 25))
         self.rect = self.image.get_rect(center=(x, y))
         self.speed = -8
 
