@@ -17,8 +17,10 @@ Windows CMD:
 venv\Scripts\activate.bat
 
 
-4. Install Dependencies
+4. Install Dependencies:
+   
 pip install -r requirements.txt
 
-5. Run the Game
+6. Run the Game:
+   
 python main.py
