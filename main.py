@@ -246,12 +246,8 @@ def homepage_screen():
 
     while True:
         WIN.blit(HOMEPAGE, (0, 0))
-
-        # Title glow shadow
         shadow = TITLE_FONT.render("SPACE ATTACK", True, SHADOW_GLOW)
         WIN.blit(shadow, (WIDTH // 2 - shadow.get_width() // 2 + 3, 130 + 3))
-
-        # Main neon violet title
         title = TITLE_FONT.render("SPACE ATTACK", True, NEON_VIOLET)
         WIN.blit(title, (WIDTH // 2 - title.get_width() // 2, 130))
 
@@ -259,18 +255,14 @@ def homepage_screen():
         stats_rect = stats_btn.draw()
 
         pygame.display.update()
-
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); exit()
-
             if e.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = pygame.mouse.get_pos()
-
                 if play_rect.collidepoint(mx, my):
                     fade_screen()
                     return
-
                 if stats_rect.collidepoint(mx, my):
                     stats_screen()
 
@@ -281,20 +273,13 @@ def homepage_screen():
 def stats_screen():
     back_btn = Button("BACK", 40, center_x=130)
     scores = get_high_scores()
-
     while True:
         WIN.blit(HOMEPAGE, (0, 0))
-
-        # Glow shadow
         shadow = TITLE_FONT.render("HIGH SCORES", True, SHADOW_GLOW)
         WIN.blit(shadow, (WIDTH // 2 - shadow.get_width() // 2 + 3, 96 + 3))
-
-        # Neon violet title
         header = TITLE_FONT.render("HIGH SCORES", True, NEON_VIOLET)
         WIN.blit(header, (WIDTH // 2 - header.get_width() // 2, 96))
-
         y = 210
-
         if scores:
             for s, k in scores[:8]:
                 row = STAT_FONT.render(f"SCORE {s}     KILLS {k}", True, CYAN_BLUE)
@@ -303,14 +288,11 @@ def stats_screen():
         else:
             msg = STAT_FONT.render("NO DATA FOUND", True, CYAN_BLUE)
             WIN.blit(msg, (WIDTH // 2 - msg.get_width() // 2, 330))
-
         back_rect = back_btn.draw()
         pygame.display.update()
-
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); exit()
-
             if e.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = pygame.mouse.get_pos()
                 if back_rect.collidepoint(mx, my):
@@ -370,13 +352,11 @@ def main_game():
     global bullets, enemies, meteors, planets, small_explosions
     global score, kills, lives, paused, invincible, distance_traveled, last_planet_used
 
-    # Reset everything
     bullets = []
     enemies = []
     meteors = []
     planets = []
     small_explosions = []
-
     score = 0
     kills = 0
     lives = 3
@@ -384,11 +364,9 @@ def main_game():
     invincible = False
     distance_traveled = 0
     last_planet_used = None  # IMPORTANT: prevents planet repeats
-
     # Ship position
     px = WIDTH // 2 - SHIP.get_width() // 2
     py = HEIGHT - 150
-
     enemy_timer = 0
     meteor_timer = 0
     UFO_AVOID_COOLDOWN = 300
