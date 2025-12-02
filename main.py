@@ -281,7 +281,7 @@ def stats_screen():
         WIN.blit(header, (WIDTH // 2 - header.get_width() // 2, 96))
         y = 210
         if scores:
-            for s, k in scores[:8]:
+            for s, k in scores[:10]:
                 row = STAT_FONT.render(f"SCORE {s}     KILLS {k}", True, CYAN_BLUE)
                 WIN.blit(row, (WIDTH // 2 - row.get_width() // 2, y))
                 y += 45

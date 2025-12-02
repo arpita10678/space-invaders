@@ -26,7 +26,7 @@ def update_stats(score, kills):
 
 
 def get_high_scores():
-    """Return top 10 highest scores for the stats page"""
+    """Return top  highest scores for the stats page"""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
